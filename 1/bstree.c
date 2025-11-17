@@ -12,24 +12,31 @@ struct bstree *bstree_create(int key, char *value) {
     return node;
 }
 
-void bstree_add(struct bstree *tree, int key, char *value) {
-    struct bstree *parent, *node;
-    if (tree == NULL)
-        return;
-    for (parent = tree; tree != NULL;) {
-        parent = tree;
-        if (key < tree->key)
-            tree = tree->left;
-        else if (key > tree->key)
-            tree = tree->right;
+struct bstree *bstree_add(struct bstree *tree, int key, char *value) {
+    struct bstree *parent = NULL, *current = tree;
+    
+    while (current != NULL) {
+        parent = current;
+        if (key < current->key)
+            current = current->left;
+        else if (key > current->key)
+            current = current->right;
         else
-            return;
+            return tree;  
     }
-    node = bstree_create(key, value);
-    if (key < parent->key)
+    
+    struct bstree *node = bstree_create(key, value);
+    if (node == NULL) return tree;
+    
+    if (parent == NULL) {
+        return node;
+    } else if (key < parent->key) {
         parent->left = node;
-    else
-    parent->right = node;
+    } else {
+        parent->right = node;
+    }
+    
+    return tree;
 }
 
 struct bstree *bstree_lookup(struct bstree *tree, int key) {

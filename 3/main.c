@@ -153,7 +153,7 @@ int main(void) {
     printf("Table 2: FibHeap decrease-all:\n");
     for (int s = 0; s < num_sizes; s++) {
         int n = sizes[s];
-        struct Fibheap *fh = build_heap();
+        struct Fibheap *fh = build_heap();        
         for (int i = 0; i < n; i++) fh = Fibheap_insert(fh, data[i], "");
 
         unsigned long long start = __rdtsc();

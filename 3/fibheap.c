@@ -68,21 +68,22 @@ struct Node *Fibheap_min(struct Fibheap *heap) {
     return heap->min;
 }
 
-struct Node *FibHeapLinkList(struct Node *heap1, struct Node *heap2) {
-    if (!heap1 || !heap2)
-        return NULL;
+struct Node *FibHeapLinkList(struct Node *h1, struct Node *h2) {
+    if (!h1) return h2;
+    if (!h2) return h1;
 
-    struct Node *right1 = heap1->right;
-    struct Node *left1 = heap1->left;
+    struct Node *h1_right = h1->right;
+    struct Node *h2_left  = h2->left;
 
-    heap1->right = heap2;
-    heap2->left = heap1;
+    h1->right = h2;
+    h2->left  = h1;
 
-    right1->left = left1;
-    left1->right = right1;
+    h2_left->right = h1_right;
+    h1_right->left = h2_left;
 
-    return heap1;
+    return h1;
 }
+
 
 struct Fibheap *Fibheap_union(struct Fibheap *heap1, struct Fibheap *heap2) {
     struct Fibheap *heap = build_heap();

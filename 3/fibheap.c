@@ -36,7 +36,7 @@ struct Fibheap *Fibheap_insert(struct Fibheap *heap, int key, char *value) {
     if (!new_node)
         return heap;
     
-    // Инициализация узла (одинаково)
+    // Инициализация узла 
     new_node->key = key;
     new_node->value = (char*)malloc(strlen(value) + 1);
     if (new_node->value) {
@@ -52,7 +52,7 @@ struct Fibheap *Fibheap_insert(struct Fibheap *heap, int key, char *value) {
     new_node->left = new_node;
     new_node->right = new_node;
     
-    // Добавляем узел в корневой список (по псевдокоду)
+    // Добавляем узел в корневой список
     Fibheap_add_node_to_root_list(new_node, heap->min);
     
     // Обновляем min
@@ -105,10 +105,8 @@ int D(int n) {
     return (int)floor(log2(n));
 }
 
-// Функция удаления узла из корневого списка
 void Fibheap_remove_node_from_root_list(struct Node *node, struct Fibheap *heap) {
     if (node->right == node) {
-        // Единственный узел в списке
         if (heap->min == node) {
             heap->min = NULL;
         }
@@ -120,23 +118,19 @@ void Fibheap_remove_node_from_root_list(struct Node *node, struct Fibheap *heap)
         }
     }
     
-    // Изолируем узел
     node->left = node;
     node->right = node;
     node->parent = NULL;
 }
 
 void Fibheap_link(struct Fibheap *heap, struct Node *y, struct Node *x) {
-    // Удаляем y из корневого списка
     Fibheap_remove_node_from_root_list(y, heap);
     
-    // Делаем y дочерним узлом x
     if (x->child == NULL) {
         x->child = y;
         y->left = y;
         y->right = y;
     } else {
-        // Добавляем y в список дочерних узлов x
         struct Node *child = x->child;
         struct Node *child_left = child->left;
         
@@ -155,7 +149,6 @@ void Fibheap_consolidate(struct Fibheap *heap) {
     int max_degree = D(heap->size) + 1;
     struct Node **A = (struct Node**)calloc(max_degree, sizeof(struct Node*));
     
-    // Находим начальный узел для обхода
     struct Node *start = heap->min;
     struct Node *current = start;
     
@@ -168,7 +161,6 @@ void Fibheap_consolidate(struct Fibheap *heap) {
             while (A[d] != NULL) {
                 struct Node *y = A[d];
                 if (x->key > y->key) {
-                    // Меняем x и y местами
                     struct Node *temp = x;
                     x = y;
                     y = temp;
@@ -182,17 +174,14 @@ void Fibheap_consolidate(struct Fibheap *heap) {
         } while (current != start);
     }
     
-    // Перестраиваем корневой список
     heap->min = NULL;
     for (int i = 0; i < max_degree; i++) {
         if (A[i] != NULL) {
             if (heap->min == NULL) {
-                // Создаем новый корневой список
                 heap->min = A[i];
                 A[i]->left = A[i];
                 A[i]->right = A[i];
             } else {
-                // Добавляем в существующий корневой список
                 Fibheap_add_node_to_root_list(A[i], heap->min);
                 if (A[i]->key < heap->min->key) {
                     heap->min = A[i];
@@ -210,7 +199,6 @@ struct Fibheap *Fibheap_extractmin(struct Fibheap *heap) {
         return NULL;
     }
     
-    // Добавляем всех детей z в корневой список
     if (z->child != NULL) {
         struct Node *child = z->child;
         struct Node *current = child;
@@ -223,11 +211,9 @@ struct Fibheap *Fibheap_extractmin(struct Fibheap *heap) {
         } while (current != child);
     }
     
-    // Удаляем z из корневого списка
     Fibheap_remove_node_from_root_list(z, heap);
     
     if (z == z->right) {
-        // z был единственным узлом в корневом списке
         heap->min = NULL;
     } else {
         heap->min = z->right;
@@ -239,9 +225,7 @@ struct Fibheap *Fibheap_extractmin(struct Fibheap *heap) {
 }
 
 void Fibheap_cut(struct Fibheap *heap, struct Node *x, struct Node *y) {
-    // Удаляем x из списка дочерних узлов y
     if (x->right == x) {
-        // x - единственный ребенок
         y->child = NULL;
     } else {
         x->left->right = x->right;
@@ -253,7 +237,6 @@ void Fibheap_cut(struct Fibheap *heap, struct Node *x, struct Node *y) {
     
     y->degree = y->degree - 1;
     
-    // Добавляем x в список корней кучи heap
     Fibheap_add_node_to_root_list(x, heap->min);
     x->parent = NULL;
     x->mark = false;
@@ -275,19 +258,16 @@ void Fibheap_cascading_cut(struct Fibheap *heap, struct Node *y) {
 
 struct Fibheap *Fibheap_decrease_key(struct Fibheap *heap, struct Node *x, int newkey) {
     if (newkey > x->key) {
-        return heap; /* Новый ключ больше текущего значения ключа */
+        return heap; 
     }
     x->key = newkey;
     struct Node *y = x->parent;
     
     if (y != NULL && x->key < y->key) {
-        /* Нарушены свойства min-heap: ключ родителя больше */
-        /* Вырезаем x и переносим его в список корней */
         Fibheap_cut(heap, x, y);
         Fibheap_cascading_cut(heap, y);
     }
     
-    /* Корректируем указатель на минимальный узел */
     if (heap->min == NULL || x->key < heap->min->key) {
         heap->min = x;
     }
@@ -296,11 +276,8 @@ struct Fibheap *Fibheap_decrease_key(struct Fibheap *heap, struct Node *x, int n
 }
 
 struct Fibheap *Fibheap_delete(struct Fibheap *heap, int key) {
-    // Сначала нужно найти узел с данным ключом
-    // Для простоты предположим, что у нас есть функция поиска
     struct Node *node_to_delete = NULL;
     
-    // Обход кучи для поиска узла с ключом
     if (heap->min != NULL) {
         struct Node *current = heap->min;
         do {
@@ -308,19 +285,16 @@ struct Fibheap *Fibheap_delete(struct Fibheap *heap, int key) {
                 node_to_delete = current;
                 break;
             }
-            // Здесь должна быть рекурсивная проверка детей
             current = current->right;
         } while (current != heap->min);
     }
     
     if (node_to_delete == NULL) {
-        return heap; // Узел не найден
+        return heap; 
     }
     
-    // Уменьшаем ключ до минимально возможного значения
     Fibheap_decrease_key(heap, node_to_delete, -2147483647); 
     
-    // Извлекаем минимальный узел (который теперь наш узел)
     Fibheap_extractmin(heap);
     
     return heap;

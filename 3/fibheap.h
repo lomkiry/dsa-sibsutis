@@ -17,7 +17,7 @@ struct Node {
 };
 
 struct Fibheap {
-    int size;
+    int size; //nnode(типа)
     struct Node *min;
 };
 

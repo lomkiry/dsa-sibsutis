@@ -6,7 +6,6 @@ struct heap *heap_create(int maxsize) {
     if (h != NULL) {
         h->maxsize = maxsize;
         h->nnodes = 0;
-        /* Последний индекс - maxsize */
         h->nodes = malloc(sizeof(*h->nodes) * (maxsize + 1));
         if (h->nodes == NULL) {
             free(h);
@@ -35,7 +34,7 @@ struct heapnode *heap_min(struct heap *h) {
 }
 
 int heap_insert(struct heap *h, int key, char *value) {
-    if (h->nnodes >= h->maxsize) /* Переполнение кучи */
+    if (h->nnodes >= h->maxsize) 
         return -1;
     
     h->nnodes++;
@@ -100,8 +99,7 @@ int heap_delete(struct heap *h, int index) {
     if (index < 1 || index > h->nnodes)
         return -1;
     
-    // Устанавливаем ключ в минимально возможное значение и поднимаем наверх
-    h->nodes[index].key = -2147483647; // INT_MIN
+    h->nodes[index].key = -2147483647; 
     
     int i = index;
     while (i > 1 && h->nodes[i].key < h->nodes[i / 2].key) {
@@ -109,7 +107,6 @@ int heap_delete(struct heap *h, int index) {
         i /= 2;
     }
     
-    // Извлекаем минимальный элемент (который теперь наш удаляемый)
     heap_extract_min(h);
     
     return 0;

@@ -88,7 +88,7 @@ struct Node *FibHeapLinkList(struct Node *h1, struct Node *h2) {
 struct Fibheap *Fibheap_union(struct Fibheap *heap1, struct Fibheap *heap2) {
     struct Fibheap *heap = build_heap();
     heap->min = heap1->min;
-    FibHeapLinkList(heap1->min, heap2->min);
+    heap->min = FibHeapLinkList(heap1->min, heap2->min);
 
     if ((!heap1->min) || (!heap2->min && heap2->min->key < heap->min->key))
         heap->min = heap2->min;
@@ -207,6 +207,7 @@ struct Fibheap *Fibheap_extractmin(struct Fibheap *heap) {
         do {
             struct Node *next = current->right;
             Fibheap_add_node_to_root_list(current, heap->min);
+            current->mark = false;
             current->parent = NULL;
             current = next;
         } while (current != child);

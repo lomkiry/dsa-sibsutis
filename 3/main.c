@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <x86intrin.h>
+#include <string.h> 
 
 #include "minheap.h"
 #include "fibheap.h"
@@ -13,8 +14,9 @@ int getrand(int min, int max) {
 int main(void) {
     srand(time(NULL));
 
-    int *data = (int*)malloc(sizeof(int) * 200000);
-    for (int i = 0; i < 200000; i++) {
+    int data_size = 200000;
+    int *data = (int*)malloc(sizeof(int) * data_size);
+    for (int i = 0; i < data_size; i++) {
         data[i] = getrand(10000, 200000);
     }
 
@@ -67,15 +69,15 @@ int main(void) {
 
         unsigned long long time = 0;
         for (int j = 0; j < cycle; j++) {
-            int idx = n / 2; 
-            int old_key = h->nodes[idx].key;
+            int idx = h->nnodes - j; // Берем элементы с конца
+            if (idx < 1) idx = 1;
+            
+            int new_val = h->nodes[idx].key - 1;
             
             unsigned long long start = __rdtsc();
-            heap_decrease_key(h, idx, old_key - 1);
+            heap_decrease_key(h, idx, new_val);
             unsigned long long end = __rdtsc();
             time += (end - start);
-
-            h->nodes[idx].key = old_key;
         }
         printf("%llu\n", time / cycle);
         heap_free(h);
@@ -87,20 +89,29 @@ int main(void) {
         struct Fibheap *fh = build_heap();
         for (int i = 0; i < n; i++) fh = Fibheap_insert(fh, data[i], "");
 
+        struct Node **nodes_to_test = (struct Node**)malloc(sizeof(struct Node*) * n);
+        struct Node *curr = fh->min;
+        int count = 0;
+        if (curr != NULL) {
+            do {
+                nodes_to_test[count++] = curr;
+                curr = curr->right;
+            } while (curr != fh->min && count < n);
+        }
+
         unsigned long long time = 0;
         for (int j = 0; j < cycle; j++) {
-            struct Node *mn = Fibheap_min(fh);
-            if (mn) {
-                int old_key = mn->key;
-                unsigned long long start = __rdtsc();
-                fh = Fibheap_decrease_key(fh, mn, old_key - 1);
-                unsigned long long end = __rdtsc();
-                time += (end - start);
-                
-                mn->key = old_key;
-            }
+            struct Node *target = nodes_to_test[j % count];
+            
+            int new_val = target->key - 1;
+
+            unsigned long long start = __rdtsc();
+            fh = Fibheap_decrease_key(fh, target, new_val);
+            unsigned long long end = __rdtsc();
+            time += (end - start);
         }
         printf("%llu\n", time / cycle);
+        free(nodes_to_test);
     }
 
     printf("Table 2: MinHeap extract-all:\n");
@@ -141,7 +152,7 @@ int main(void) {
         for (int i = 0; i < n; i++) heap_insert(h, data[i], "");
 
         unsigned long long start = __rdtsc();
-        for (int i = 0; i < h->nnodes; i++) {
+        for (int i = h->nnodes; i >= 1; i--) {
             heap_decrease_key(h, i, h->nodes[i].key - 1);
         }
         unsigned long long end = __rdtsc();
@@ -156,16 +167,24 @@ int main(void) {
         struct Fibheap *fh = build_heap();        
         for (int i = 0; i < n; i++) fh = Fibheap_insert(fh, data[i], "");
 
+        struct Node **all_nodes = (struct Node**)malloc(sizeof(struct Node*) * n);
+        struct Node *curr = fh->min;
+        int idx = 0;
+        if (curr != NULL) {
+            do {
+                all_nodes[idx++] = curr;
+                curr = curr->right;
+            } while (curr != fh->min && idx < n);
+        }
+
         unsigned long long start = __rdtsc();
-        for (int i = 0; i < n; i++) {
-            struct Node *mn = Fibheap_min(fh);
-            if(mn) {
-                fh = Fibheap_decrease_key(fh, mn, mn->key - 1);
-            }
+        for (int i = 0; i < idx; i++) {
+            fh = Fibheap_decrease_key(fh, all_nodes[i], all_nodes[i]->key - 1);
         }
         unsigned long long end = __rdtsc();
 
         printf("%llu\n", end - start);
+        free(all_nodes);
     }
 
     free(data);

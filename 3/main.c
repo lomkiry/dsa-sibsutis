@@ -69,7 +69,7 @@ int main(void) {
 
         unsigned long long time = 0;
         for (int j = 0; j < cycle; j++) {
-            int idx = h->nnodes - j; // Берем элементы с конца
+            int idx = h->nnodes - j; 
             if (idx < 1) idx = 1;
             
             int new_val = h->nodes[idx].key - 1;

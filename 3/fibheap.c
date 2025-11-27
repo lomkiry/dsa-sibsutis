@@ -11,24 +11,12 @@ struct Fibheap *build_heap(void) {
 }
 
 void Fibheap_add_node_to_root_list(struct Node *node, struct Node *h) {
-    if (h == NULL) {
-        return;
-    }
-    
-    if (h->left == h) {
-        /* Случай 1: список содержит один корень */
-        h->left = node;
-        h->right = node;
-        node->right = h;
-        node->left = h;
-    } else {
-        /* Случай 2: список содержит более одного корня */
-        struct Node *lnode = h->left;
-        h->left = node;
-        node->right = h;
-        node->left = lnode;
-        lnode->right = node;
-    }
+    if (h == NULL) return; 
+
+    node->left = h->left;
+    node->right = h;
+    h->left->right = node;
+    h->left = node;
 }
 
 struct Fibheap *Fibheap_insert(struct Fibheap *heap, int key, char *value) {
@@ -36,7 +24,6 @@ struct Fibheap *Fibheap_insert(struct Fibheap *heap, int key, char *value) {
     if (!new_node)
         return heap;
     
-    // Инициализация узла 
     new_node->key = key;
     new_node->value = (char*)malloc(strlen(value) + 1);
     if (new_node->value) {
@@ -52,12 +39,16 @@ struct Fibheap *Fibheap_insert(struct Fibheap *heap, int key, char *value) {
     new_node->left = new_node;
     new_node->right = new_node;
     
-    // Добавляем узел в корневой список
-    Fibheap_add_node_to_root_list(new_node, heap->min);
-    
-    // Обновляем min
-    if (heap->min == NULL || key < heap->min->key) {
+    if (heap->min == NULL) {
         heap->min = new_node;
+        new_node->left = new_node;
+        new_node->right = new_node;
+    } else {
+        Fibheap_add_node_to_root_list(new_node, heap->min);
+        
+        if (key < heap->min->key) {
+            heap->min = new_node;
+        }
     }
     
     heap->size++;

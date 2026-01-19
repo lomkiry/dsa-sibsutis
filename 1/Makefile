@@ -1,2 +1,2 @@
 all:
-	gcc main.c bstree.c rbtree.c 
+	gcc main.c bstree.c rbtree.c
